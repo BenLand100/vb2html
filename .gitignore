@@ -1,0 +1,8 @@
+﻿# .idea IDE project files
+.idea
+
+# test outputs
+test/dist/
+
+# pycache
+*/__pycache__
