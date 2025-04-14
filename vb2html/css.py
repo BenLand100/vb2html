@@ -9,6 +9,7 @@ html {
 body {
   max-width: 900px;
   margin: auto;
+  padding: 0.75em;
 }
 h1 {
   text-align: center;
@@ -25,7 +26,7 @@ img {
 blockquote {
   background: #f9f9f9;
   border-left: 3px solid #ccc;
-  margin: 1.5em 10px;
+  margin: 0.5em 10px;
   padding: 0.5em 10px;
 }
 code {

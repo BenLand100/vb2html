@@ -13,10 +13,13 @@ except:
 class HTMLGen:
     '''Contains all the HTML fragments'''
 
-    def __init__(self, sitename='SRL Archive', bbcode=BBCodeVB4(), prefix='/srl/', exclude_set={}):
+    def __init__(self, sitename='SRL Archive', bbcode=None, old_domain='villavu.com', prefix='/srl/', exclude_set={}):
+        if bbcode is None:
+            self.bbcode = BBCodeVB4(prefix=prefix, old_domain=old_domain)
+        else:    
+            self.bbcode = bbcode
         self.sitename = sitename
         self.exclude_set = exclude_set
-        self.bbcode = bbcode
         self.prefix = prefix
          
     def href(self, asset):
