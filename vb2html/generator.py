@@ -12,7 +12,7 @@ class SiteGen:
 
     def __init__(self, webforum, webroot='webroot', exclude_set={30, 7, 129, 136, 6, 481, 14, 285, 91}, prefix='/srl/', **kwargs):
         self.webforum = webforum
-        self.html = HTMLGen(webforum, exclude_set=exclude_set, prefix=prefix, **kwargs)
+        self.html = HTMLGen(webforum.sitename, exclude_set=exclude_set, prefix=prefix, **kwargs)
         self.exclude_set = exclude_set
         self.prefix = prefix
         self.webroot = webroot
