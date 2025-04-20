@@ -5,7 +5,8 @@ from .bbcode import BBCodeVB4
 try:
     from IPython.display import display, HTML
     def test_render(html, *css_fragments):
-        wrapper = f'''<div><style>{'\n'.join(css_fragments)}</style>{html}</div>'''
+        css = "\n".join(css_fragments)
+        wrapper = f"<div><style>{css}</style>{html}</div>"
         display(HTML(wrapper))
 except:
     pass
@@ -29,7 +30,7 @@ class HTMLGen:
         if f.forumid == -1:
             return f'<h1>{f.title}</h1>'
         else:
-            return f'<h1><a {self.href('')}>{self.sitename}</a> - {f.title}</h1>'
+            return f"<h1><a {self.href('')}>{self.sitename}</a> - {f.title}</h1>"
         
     ### Thread Page
 
@@ -46,13 +47,26 @@ class HTMLGen:
 </div>
 '''
 
-    def thread_view(self, f, t): 
-        return f'''
-<h1><a {self.href('')}>{self.sitename}</a> - <a {self.href(f'f/{f.forumid}/')}>{f.title}</a></h1>
-<h2>{t.title}</h2>
-<hr>
-{'\n<hr>\n'.join([self.post_fragment(f,t,p) for p in t.posts])}
-'''
+    def thread_view(self, f, t):
+        forum_link  = self.href("")
+        thread_link = self.href(f"f/{f.forumid}/")
+
+        sep        = "\n<hr>\n"
+        posts_html = sep.join(
+            self.post_fragment(f, t, p)
+            for p in t.posts
+        )
+
+        return f"""
+            <h1>
+            <a {forum_link}>{self.sitename}</a>
+            – 
+            <a {thread_link}>{f.title}</a>
+            </h1>
+            <h2>{t.title}</h2>
+            <hr>
+            {posts_html}
+        """
 
 ### Forum Page
 
@@ -77,36 +91,74 @@ class HTMLGen:
 </div>
 '''
 
-    def reg_forum_view(self, f): 
-        return f'''
-{self.title(f)}
-<div class="subforums">
-{'\n<hr>\n'.join([self.child_fragment(f,c) for c in f.children])}
-</div>
-<hr><hr>
-<div class="threads">
-{'\n<hr>'.join([self.thread_fragment(f,t) for t in f.threads if len(t.posts) > 0])}
-</div>
-'''
+    def reg_forum_view(self, f):
+        title_html = self.title(f)
+    
+        sub_sep  = "\n<hr>\n"
+        sub_html = sub_sep.join(
+            self.child_fragment(f, c)
+            for c in f.children
+        )
+    
+        thr_sep  = "\n<hr>"
+        thr_html = thr_sep.join(
+            self.thread_fragment(f, t)
+            for t in f.threads
+            if t.posts  # same as len(t.posts) > 0
+        )
+    
+        return f"""
+            {title_html}
+            <div class="subforums">
+            {sub_html}
+            </div>
+            <hr><hr>
+            <div class="threads">
+            {thr_html}
+            </div>
+        """
 
 
-    def group_forum_view(self, f): 
-        return f'''
-{self.title(f)}
-<div class="forums">
-{'\n<br><br>\n'.join([
-    ( f'<div class="forumgroup">\n<h2>{subf.title}</h2>'
-      if len(subf.threads) == 0 else
-      f'<div class="forumgroup">\n<h2><a {self.href(f'f/{subf.forumid}/')}>{subf.title}</a></h2>'
-    ) +
-    f'<p>{subf.description}</p><hr>' +
-    '<hr>\n'.join([self.child_fragment(subf,c,h=3) for c in subf.children]) +
-    '</div>'
-    for subf in f.children if (len(subf.children) or len(subf.threads)) and subf.forumid not in self.exclude_set
-])
-}
-</div>
-'''
+    def group_forum_view(self, f):
+        title_html = self.title(f)
+
+        group_sep   = "\n<br><br>\n"
+        child_sep   = "<hr>\n"
+
+        groups = []
+        for subf in f.children:
+            if not (subf.children or subf.threads):
+                continue
+            if subf.forumid in self.exclude_set:
+                continue
+
+            if not subf.threads:
+                header = f'<div class="forumgroup">\n<h2>{subf.title}</h2>'
+            else:
+                link = self.href(f"f/{subf.forumid}/")
+                header = f'<div class="forumgroup">\n<h2><a {link}>{subf.title}</a></h2>'
+
+            desc = f'<p>{subf.description}</p><hr>'
+
+            children_html = child_sep.join(
+                self.child_fragment(subf, c, h=3)
+                for c in subf.children
+            )
+
+            # close the div
+            footer = "</div>"
+
+            groups.append(header + desc + children_html + footer)
+
+        groups_html = group_sep.join(groups)
+
+        return f"""
+    {title_html}
+    <div class="forums">
+    {groups_html}
+    </div>
+    """
+
 
     def forum_view(self, f):
         if len(f.threads) == 0:
