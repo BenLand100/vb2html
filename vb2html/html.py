@@ -60,7 +60,7 @@ class HTMLGen:
         return f"""
             <h1>
             <a {forum_link}>{self.sitename}</a>
-            – 
+            -
             <a {thread_link}>{f.title}</a>
             </h1>
             <h2>{t.title}</h2>
